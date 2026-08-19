@@ -26,19 +26,10 @@ class FirebaseCloudService {
 
     private val firestore: FirebaseFirestore? by lazy {
         try {
-            if (FirebaseApp.getApps(FirebaseApp.getInstance().applicationContext).isNotEmpty()) {
-                FirebaseFirestore.getInstance()
-            } else {
-                null
-            }
+            FirebaseFirestore.getInstance()
         } catch (e: Exception) {
             Log.w(tag, "Firebase not initialized or available: ${e.message}")
-            try {
-                FirebaseFirestore.getInstance()
-            } catch (ex: Exception) {
-                Log.w(tag, "Failed to get Firestore instance: ${ex.message}")
-                null
-            }
+            null
         }
     }
 
