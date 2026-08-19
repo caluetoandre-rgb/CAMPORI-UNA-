@@ -1,0 +1,6 @@
+{
+  "name": "CAMPORI UNA",
+  "description": "Aplicativo oficial do II Campori de Desbravadores da União Nordeste de Angola (UNA) em Pungo a Ndongo, Malanje. Gestão de programa, portal de inscrição, cronograma dinâmico, mapa interativo, Bíblia offline e galeria de fotos.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
