@@ -68,7 +68,7 @@ object CamporiInitialData {
             id = 1L,
             title = "Portal de Inscrições Oficial Aberto!",
             summary = "Garanta a inscrição do seu Clube e receba o Crachá Digital com QR Code.",
-            body = "A Direção dos Desbravadores da União Nordeste de Angola (UNA) convoca todos os Clubes das Missões Norte, Nordeste, Centro, Sul e Leste para realizarem o credenciamento oficial. O evento ocorrerá de 28 de Dezembro de 2026 a 03 de Janeiro de 2027 no solo histórico de Pungo a Ndongo, Província de Malanje.",
+            body = "A Direção dos Desbravadores da União Nordeste de Angola (UNA) convoca todos os Clubes das Missões Sul de Luanda e Cabinda, Nordeste de Angola, Norte de Angola e Leste de Angola para realizarem o credenciamento oficial. O evento ocorrerá de 28 de Dezembro de 2026 a 03 de Janeiro de 2027 no solo histórico de Pungo a Ndongo, Província de Malanje.",
             dateLabel = "Oficial UNA",
             priority = "Urgente",
             department = "Direção Geral UNA",
@@ -374,28 +374,52 @@ object CamporiInitialData {
             coordinator = "Dra. Médica Chefe UNA"
         ),
         CamporiMapPoint(
+            id = "subcampo_sul_luanda_cabinda",
+            title = "Subcampo Missão Sul de Luanda e Cabinda",
+            subtitle = "Acomodações & Portais dos Clubes",
+            zone = "Subcampo",
+            xPercent = 0.20f,
+            yPercent = 0.22f,
+            iconType = "tent",
+            description = "Área reservada para as delegações da Missão Sul de Luanda e Cabinda. Portais decorados e barracas padronizadas.",
+            openingHours = "Acesso restrito à delegação",
+            coordinator = "Coordenador Regional Sul de Luanda e Cabinda"
+        ),
+        CamporiMapPoint(
             id = "subcampo_norte",
             title = "Subcampo Missão Norte de Angola",
             subtitle = "Acomodações & Portais dos Clubes",
             zone = "Subcampo",
-            xPercent = 0.25f,
+            xPercent = 0.35f,
             yPercent = 0.25f,
             iconType = "tent",
-            description = "Área reservada para as delegações de Luanda, Bengo, Uíge, Zaire e Cabinda. Portais decorados e barracas padronizadas.",
+            description = "Área reservada para as delegações da Missão Norte de Angola (Bengo, Uíge, Zaire e regiões norte). Portais decorados.",
             openingHours = "Acesso restrito à delegação",
             coordinator = "Coordenador Regional Norte"
         ),
         CamporiMapPoint(
             id = "subcampo_nordeste",
-            title = "Subcampo Missão Nordeste (Anfitriã)",
+            title = "Subcampo Missão Nordeste de Angola (Anfitriã)",
             subtitle = "Malanje, Cuanza Norte, Lunda Norte, Lunda Sul",
             zone = "Subcampo",
             xPercent = 0.75f,
             yPercent = 0.25f,
             iconType = "tent",
-            description = "Área da missão anfitriã do Campori UNA, abrigando centenas de clubes da província de Malanje e leste.",
+            description = "Área da missão anfitriã do Campori UNA, abrigando centenas de clubes da província de Malanje e região.",
             openingHours = "Acesso restrito à delegação",
             coordinator = "Coordenador Regional Nordeste"
+        ),
+        CamporiMapPoint(
+            id = "subcampo_leste",
+            title = "Subcampo Missão Leste de Angola",
+            subtitle = "Acomodações & Portais dos Clubes",
+            zone = "Subcampo",
+            xPercent = 0.88f,
+            yPercent = 0.28f,
+            iconType = "tent",
+            description = "Área reservada para as delegações da Missão Leste de Angola (Moxico, Saurimo e leste). Portais decorados.",
+            openingHours = "Acesso restrito à delegação",
+            coordinator = "Coordenador Regional Leste"
         ),
         CamporiMapPoint(
             id = "pioneiria",
@@ -560,10 +584,10 @@ object CamporiInitialData {
         Registration(
             id = 2L,
             fullName = "Esperança Manuel",
-            clubName = "Águias de Pungo Andongo",
-            churchName = "Igreja Adventista de Cacuso",
-            mission = "Missão Nordeste de Angola",
-            region = "2ª Região - Cacuso",
+            clubName = "Sentinelas de Cabinda",
+            churchName = "Igreja Central de Cabinda",
+            mission = "Missão Sul de Luanda e Cabinda",
+            region = "1ª Região - Cabinda",
             role = "Capitão",
             age = 15,
             phone = "+244 944 112 233",
@@ -585,6 +609,21 @@ object CamporiInitialData {
             bloodType = "B+",
             emergencyContact = "+244 919 887 766 (Pai João)",
             registrationCode = "UNA-2026-2155",
+            status = "Confirmado"
+        ),
+        Registration(
+            id = 4L,
+            fullName = "Teresa Chitumba",
+            clubName = "Guerreiros do Leste",
+            churchName = "Igreja Central de Luena",
+            mission = "Missão Leste de Angola",
+            region = "1ª Região - Moxico",
+            role = "Conselheiro",
+            age = 21,
+            phone = "+244 926 778 899",
+            bloodType = "O+",
+            emergencyContact = "+244 918 223 344 (Família Chitumba)",
+            registrationCode = "UNA-2026-3410",
             status = "Confirmado"
         )
     )

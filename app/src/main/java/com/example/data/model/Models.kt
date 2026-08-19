@@ -2,19 +2,21 @@ package com.example.data.model
 
 data class Registration(
     val id: Long = 0,
-    val fullName: String,
-    val clubName: String,
-    val churchName: String,
-    val mission: String, // Missão Norte de Angola, Missão Nordeste, Missão Centro, Missão Sul, Missão Leste
-    val region: String,
-    val role: String, // Desbravador, Capitão, Conselheiro, Diretor, Instrutor, Pastor, Cozinha/Apoio, Equipe Médica
-    val age: Int,
-    val phone: String,
-    val bloodType: String,
-    val emergencyContact: String,
-    val registrationCode: String,
+    val fullName: String = "",
+    val clubName: String = "",
+    val churchName: String = "",
+    val mission: String = "",
+    val region: String = "",
+    val role: String = "Desbravador",
+    val age: Int = 0,
+    val phone: String = "",
+    val bloodType: String = "O+",
+    val emergencyContact: String = "",
+    val registrationCode: String = "",
     val registrationDate: Long = System.currentTimeMillis(),
-    val status: String = "Confirmado"
+    val status: String = "Confirmado", // "Pendente", "Confirmado", "Aprovado", "Rejeitado"
+    val isCheckedIn: Boolean = false,
+    val rejectionReason: String = ""
 )
 
 data class ScheduleItem(

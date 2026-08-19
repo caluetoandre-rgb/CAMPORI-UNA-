@@ -14,8 +14,10 @@ val PathfinderRedLight = Color(0xFFFF6659)
 val CamporiNavy = Color(0xFF0D2B45)
 val CamporiNavyLight = Color(0xFF203A43)
 val CamporiBlue = Color(0xFF1B3B6F)
+val CamporiSky = Color(0xFF4A90E2)
 
 val ForestGreen = Color(0xFF2E7D32)
+val PathfinderGreen = Color(0xFF2E7D32)
 val MalanjeSand = Color(0xFFF7F3E9)
 val MalanjeEarth = Color(0xFF8D6E63)
 

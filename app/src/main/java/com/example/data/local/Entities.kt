@@ -21,7 +21,9 @@ data class RegistrationEntity(
     val emergencyContact: String,
     val registrationCode: String,
     val registrationDate: Long,
-    val status: String
+    val status: String,
+    val isCheckedIn: Boolean = false,
+    val rejectionReason: String = ""
 ) {
     fun toDomain(): Registration = Registration(
         id = id,
@@ -37,7 +39,9 @@ data class RegistrationEntity(
         emergencyContact = emergencyContact,
         registrationCode = registrationCode,
         registrationDate = registrationDate,
-        status = status
+        status = status,
+        isCheckedIn = isCheckedIn,
+        rejectionReason = rejectionReason
     )
 
     companion object {
@@ -55,7 +59,9 @@ data class RegistrationEntity(
             emergencyContact = r.emergencyContact,
             registrationCode = r.registrationCode,
             registrationDate = r.registrationDate,
-            status = r.status
+            status = r.status,
+            isCheckedIn = r.isCheckedIn,
+            rejectionReason = r.rejectionReason
         )
     }
 }

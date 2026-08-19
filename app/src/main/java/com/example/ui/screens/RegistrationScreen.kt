@@ -67,6 +67,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -76,6 +77,7 @@ import com.example.ui.components.DigitalBadgeCard
 import com.example.ui.theme.CamporiBlue
 import com.example.ui.theme.CamporiNavy
 import com.example.ui.theme.ForestGreen
+import com.example.ui.theme.PathfinderGreen
 import com.example.ui.theme.PathfinderRed
 import com.example.ui.theme.PathfinderYellow
 import com.example.ui.theme.PathfinderYellowDark
@@ -90,6 +92,8 @@ fun RegistrationScreen(
     var selectedTab by remember { mutableIntStateOf(0) }
     val registrations by viewModel.registrations.collectAsStateWithLifecycle()
     val lastRegistered by viewModel.lastRegistered.collectAsStateWithLifecycle()
+    val userSelectedClub by viewModel.userSelectedClub.collectAsStateWithLifecycle()
+    val myClubRegistrations by viewModel.myClubRegistrations.collectAsStateWithLifecycle()
 
     var activeBadgeForPreview by remember { mutableStateOf<Registration?>(null) }
 
@@ -114,10 +118,9 @@ fun RegistrationScreen(
     var bloodExpanded by remember { mutableStateOf(false) }
 
     val missionOptions = listOf(
+        "Missão Sul de Luanda e Cabinda",
         "Missão Nordeste de Angola",
         "Missão Norte de Angola",
-        "Missão Centro de Angola",
-        "Missão Sul de Angola",
         "Missão Leste de Angola"
     )
 
@@ -213,9 +216,9 @@ fun RegistrationScreen(
                 onClick = { selectedTab = 1 },
                 text = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Default.Badge, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Icon(Icons.Default.Group, contentDescription = null, modifier = Modifier.size(18.dp))
                         Spacer(modifier = Modifier.width(6.dp))
-                        Text("Inscritos (${registrations.size})", fontWeight = FontWeight.Bold)
+                        Text("Inscritos do Clube (${myClubRegistrations.size})", fontWeight = FontWeight.Bold)
                     }
                 }
             )
@@ -524,16 +527,55 @@ fun RegistrationScreen(
                 }
             }
         } else {
-            // Registrations List & Search
+            // Registrations List & Search - Scoped strictly to the same club for normal users
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(16.dp)
             ) {
+                // Club Selector & Info Banner
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFE8EFF5))
+                ) {
+                    Column(modifier = Modifier.padding(12.dp)) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Icon(Icons.Default.Group, contentDescription = null, tint = CamporiNavy, modifier = Modifier.size(20.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "Meu Clube:",
+                                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, color = CamporiNavy)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = userSelectedClub.ifBlank { "Todos do Clube" },
+                                style = MaterialTheme.typography.titleSmall.copy(
+                                    fontWeight = FontWeight.Black,
+                                    color = PathfinderRed
+                                ),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "🔒 Para proteção dos dados, usuários regulares visualizam apenas os inscritos do seu clube. Exclusão e aprovação geral são exclusivas do Painel Admin.",
+                            style = MaterialTheme.typography.labelSmall.copy(color = Color(0xFF555555), fontSize = 11.sp)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(10.dp))
+
                 OutlinedTextField(
                     value = searchQuery,
                     onValueChange = { searchQuery = it },
-                    placeholder = { Text("Pesquisar por nome, clube ou missão...") },
+                    placeholder = { Text("Pesquisar desbravador no clube...") },
                     leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
                     trailingIcon = {
                         if (searchQuery.isNotEmpty()) {
@@ -550,12 +592,11 @@ fun RegistrationScreen(
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                val filtered = registrations.filter {
+                val filtered = myClubRegistrations.filter {
                     if (searchQuery.isBlank()) true
                     else {
                         it.fullName.contains(searchQuery, ignoreCase = true) ||
-                        it.clubName.contains(searchQuery, ignoreCase = true) ||
-                        it.mission.contains(searchQuery, ignoreCase = true) ||
+                        it.role.contains(searchQuery, ignoreCase = true) ||
                         it.registrationCode.contains(searchQuery, ignoreCase = true)
                     }
                 }
@@ -567,10 +608,20 @@ fun RegistrationScreen(
                             .padding(24.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(
-                            text = "Nenhum participante encontrado.",
-                            style = MaterialTheme.typography.bodyMedium.copy(color = Color.Gray)
-                        )
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Icon(Icons.Default.Person, contentDescription = null, tint = Color.Gray, modifier = Modifier.size(48.dp))
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "Nenhum participante inscrito no clube '${userSelectedClub}'.",
+                                style = MaterialTheme.typography.bodyMedium.copy(color = Color.Gray),
+                                textAlign = TextAlign.Center
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = "Cadastre novos membros na aba 'Nova Inscrição'.",
+                                style = MaterialTheme.typography.bodySmall.copy(color = CamporiNavy, fontWeight = FontWeight.SemiBold)
+                            )
+                        }
                     }
                 } else {
                     LazyColumn(
@@ -581,8 +632,7 @@ fun RegistrationScreen(
                         items(filtered, key = { it.id }) { item ->
                             RegistrationItemCard(
                                 registration = item,
-                                onViewBadge = { activeBadgeForPreview = item },
-                                onDelete = { viewModel.deleteRegistration(item) }
+                                onViewBadge = { activeBadgeForPreview = item }
                             )
                         }
                     }
@@ -595,8 +645,7 @@ fun RegistrationScreen(
 @Composable
 fun RegistrationItemCard(
     registration: Registration,
-    onViewBadge: () -> Unit,
-    onDelete: () -> Unit
+    onViewBadge: () -> Unit
 ) {
     ElevatedCard(
         modifier = Modifier
@@ -661,22 +710,70 @@ fun RegistrationItemCard(
                     ),
                     maxLines = 1
                 )
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                val isApproved = registration.status.equals("Aprovado", ignoreCase = true) || registration.status.equals("Confirmado", ignoreCase = true)
+                val isRejected = registration.status.equals("Rejeitado", ignoreCase = true)
+                val badgeColor = when {
+                    isApproved -> PathfinderGreen
+                    isRejected -> PathfinderRed
+                    else -> PathfinderYellowDark
+                }
+
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Surface(
+                        shape = RoundedCornerShape(6.dp),
+                        color = badgeColor.copy(alpha = 0.15f)
+                    ) {
+                        Text(
+                            text = if (isApproved) "✓ Nuvem: ${registration.status}" else "⏳ ${registration.status}",
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                color = badgeColor,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 10.sp
+                            )
+                        )
+                    }
+
+                    if (registration.isCheckedIn) {
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Surface(
+                            shape = RoundedCornerShape(6.dp),
+                            color = Color(0xFFE0F2F1)
+                        ) {
+                            Text(
+                                text = "🎟️ Entrada OK",
+                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    color = Color(0xFF00796B),
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 10.sp
+                                )
+                            )
+                        }
+                    }
+                }
             }
 
-            IconButton(onClick = onViewBadge) {
+            Button(
+                onClick = onViewBadge,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFFE8EEF5),
+                    contentColor = CamporiNavy
+                ),
+                shape = RoundedCornerShape(8.dp),
+                contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp)
+            ) {
                 Icon(
                     Icons.Default.QrCode,
-                    contentDescription = "Ver Crachá",
+                    contentDescription = "Crachá",
+                    modifier = Modifier.size(16.dp),
                     tint = CamporiNavy
                 )
-            }
-
-            IconButton(onClick = onDelete) {
-                Icon(
-                    Icons.Default.Delete,
-                    contentDescription = "Remover",
-                    tint = Color.LightGray
-                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text("Crachá", fontSize = 12.sp, fontWeight = FontWeight.Bold)
             }
         }
     }

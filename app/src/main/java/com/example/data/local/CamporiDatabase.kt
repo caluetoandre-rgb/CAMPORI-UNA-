@@ -12,7 +12,7 @@ import androidx.room.RoomDatabase
         AnnouncementEntity::class,
         BibleBookmarkEntity::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class CamporiDatabase : RoomDatabase() {
@@ -31,7 +31,9 @@ abstract class CamporiDatabase : RoomDatabase() {
                     context.applicationContext,
                     CamporiDatabase::class.java,
                     "campori_una.db"
-                ).build()
+                )
+                .fallbackToDestructiveMigration()
+                .build()
                 INSTANCE = instance
                 instance
             }

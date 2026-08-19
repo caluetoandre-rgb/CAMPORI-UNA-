@@ -146,7 +146,7 @@ fun HomeScreen(
                         .padding(horizontal = 16.dp, vertical = 8.dp)
                         .clickable {
                             viewModel.selectAnnouncement(urgentAnnouncement)
-                            onNavigateToTab(4) // Announcements tab
+                            onNavigateToTab(5) // Announcements tab (TAB_ANNOUNCEMENTS)
                         }
                         .testTag("urgent_announcement_banner"),
                     shape = RoundedCornerShape(14.dp),
@@ -281,7 +281,7 @@ fun HomeScreen(
                         containerColor = Color(0xFFFBE9E7),
                         accentColor = PathfinderRed,
                         modifier = Modifier.weight(1f),
-                        onClick = { onNavigateToTab(5) }
+                        onClick = { onNavigateToTab(4) }
                     )
                 }
 
@@ -310,6 +310,18 @@ fun HomeScreen(
                         onClick = { onNavigateToTab(7) }
                     )
                 }
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                QuickModuleCard(
+                    title = "Área da Direção & Admin",
+                    subtitle = "Validação de Inscrições & Comunicados na Nuvem",
+                    icon = Icons.Default.HowToReg,
+                    containerColor = Color(0xFFE0F2F1),
+                    accentColor = Color(0xFF00796B),
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = { onNavigateToTab(8) } // TAB_ADMIN
+                )
             }
         }
 

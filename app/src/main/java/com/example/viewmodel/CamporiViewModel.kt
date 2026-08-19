@@ -62,8 +62,75 @@ class CamporiViewModel(application: Application) : AndroidViewModel(application)
     val registrationCount: StateFlow<Int> = repository.registrationCount
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
 
+    val cloudSyncStatus: StateFlow<String> = repository.cloudSyncStatus
+
+    // Admin Mode & Security
+    private val _isAdminAuthenticated = MutableStateFlow(false)
+    val isAdminAuthenticated: StateFlow<Boolean> = _isAdminAuthenticated.asStateFlow()
+
+    private val _adminUserEmail = MutableStateFlow<String?>("admin@camporiuna.org")
+    val adminUserEmail: StateFlow<String?> = _adminUserEmail.asStateFlow()
+
+    private val _isAdminAuthLoading = MutableStateFlow(false)
+    val isAdminAuthLoading: StateFlow<Boolean> = _isAdminAuthLoading.asStateFlow()
+
+    private val _adminSearchQuery = MutableStateFlow("")
+    val adminSearchQuery: StateFlow<String> = _adminSearchQuery.asStateFlow()
+
+    private val _adminStatusFilter = MutableStateFlow("Todos") // Todos, Pendente, Aprovado, Rejeitado, Check-in
+    val adminStatusFilter: StateFlow<String> = _adminStatusFilter.asStateFlow()
+
+    private val _adminMissionFilter = MutableStateFlow("Todas")
+    val adminMissionFilter: StateFlow<String> = _adminMissionFilter.asStateFlow()
+
+    val filteredAdminRegistrations: StateFlow<List<Registration>> = combine(
+        registrations,
+        _adminSearchQuery,
+        _adminStatusFilter,
+        _adminMissionFilter
+    ) { list, query, status, mission ->
+        list.filter { reg ->
+            val matchQuery = if (query.isBlank()) true else {
+                reg.fullName.contains(query, ignoreCase = true) ||
+                reg.clubName.contains(query, ignoreCase = true) ||
+                reg.churchName.contains(query, ignoreCase = true) ||
+                reg.registrationCode.contains(query, ignoreCase = true)
+            }
+            val matchStatus = when (status) {
+                "Todos" -> true
+                "Pendentes" -> reg.status.equals("Pendente", ignoreCase = true)
+                "Aprovados" -> reg.status.equals("Aprovado", ignoreCase = true) || reg.status.equals("Confirmado", ignoreCase = true)
+                "Rejeitados" -> reg.status.equals("Rejeitado", ignoreCase = true)
+                "Check-in Realizado" -> reg.isCheckedIn
+                else -> true
+            }
+            val matchMission = if (mission == "Todas") true else reg.mission.contains(mission, ignoreCase = true)
+
+            matchQuery && matchStatus && matchMission
+        }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
     private val _lastRegistered = MutableStateFlow<Registration?>(null)
     val lastRegistered: StateFlow<Registration?> = _lastRegistered.asStateFlow()
+
+    // Normal User Scope: Can only view participants from their own club
+    private val _userSelectedClub = MutableStateFlow<String>("Pioneiros do Kwanza")
+    val userSelectedClub: StateFlow<String> = _userSelectedClub.asStateFlow()
+
+    fun setUserSelectedClub(club: String) {
+        _userSelectedClub.value = club
+    }
+
+    val myClubRegistrations: StateFlow<List<Registration>> = combine(
+        registrations,
+        _userSelectedClub
+    ) { list, activeClub ->
+        if (activeClub.isBlank()) {
+            list
+        } else {
+            list.filter { it.clubName.equals(activeClub, ignoreCase = true) }
+        }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     // Schedules
     val schedules: StateFlow<List<ScheduleItem>> = repository.allSchedules
@@ -201,6 +268,127 @@ class CamporiViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
+    fun authenticateAdminWithCredentials(email: String, pass: String, onResult: (Boolean, String) -> Unit) {
+        viewModelScope.launch {
+            _isAdminAuthLoading.value = true
+            val result = repository.signInAdmin(email, pass)
+            _isAdminAuthLoading.value = false
+
+            if (result.isSuccess) {
+                val emailResult = result.getOrNull() ?: email
+                _adminUserEmail.value = emailResult
+                _isAdminAuthenticated.value = true
+                _uiMessage.value = UiMessage(message = "Autenticado no Firebase Auth: $emailResult")
+                onResult(true, "Acesso liberado com sucesso!")
+            } else {
+                val err = result.exceptionOrNull()?.message ?: "Falha na autenticação"
+                _uiMessage.value = UiMessage(message = "Erro de autenticação: $err")
+                onResult(false, err)
+            }
+        }
+    }
+
+    fun authenticateAdmin(pin: String): Boolean {
+        val trimmed = pin.trim()
+        val isValid = trimmed == "2026" || trimmed == "UNA2026" || trimmed.equals("admin", ignoreCase = true) || trimmed == "UNA2026!Sec"
+        if (isValid) {
+            _adminUserEmail.value = "admin@camporiuna.org"
+            _isAdminAuthenticated.value = true
+            _uiMessage.value = UiMessage(message = "Acesso de Administrador liberado!")
+        } else {
+            _uiMessage.value = UiMessage(message = "PIN/Código incorreto. Use seu e-mail e senha da liderança ou o PIN oficial.")
+        }
+        return isValid
+    }
+
+    fun logoutAdmin() {
+        repository.signOutAdmin()
+        _isAdminAuthenticated.value = false
+        _uiMessage.value = UiMessage(message = "Sessão de Administrador encerrada.")
+    }
+
+    fun setAdminSearchQuery(query: String) {
+        _adminSearchQuery.value = query
+    }
+
+    fun setAdminStatusFilter(status: String) {
+        _adminStatusFilter.value = status
+    }
+
+    fun setAdminMissionFilter(mission: String) {
+        _adminMissionFilter.value = mission
+    }
+
+    fun approveRegistration(code: String) {
+        viewModelScope.launch {
+            try {
+                repository.approveRegistration(code)
+                _uiMessage.value = UiMessage(message = "Inscrição $code aprovada com sucesso na Nuvem!")
+            } catch (e: Exception) {
+                _uiMessage.value = UiMessage(message = "Erro ao aprovar: ${e.message}")
+            }
+        }
+    }
+
+    fun rejectRegistration(code: String, reason: String) {
+        viewModelScope.launch {
+            try {
+                repository.rejectRegistration(code, reason)
+                _uiMessage.value = UiMessage(message = "Inscrição $code rejeitada.")
+            } catch (e: Exception) {
+                _uiMessage.value = UiMessage(message = "Erro ao rejeitar: ${e.message}")
+            }
+        }
+    }
+
+    fun toggleCheckIn(code: String, currentCheckedIn: Boolean) {
+        viewModelScope.launch {
+            try {
+                val newStatus = !currentCheckedIn
+                repository.checkInRegistration(code, newStatus)
+                val msg = if (newStatus) "Check-in de entrada confirmado para $code!" else "Check-in cancelado para $code."
+                _uiMessage.value = UiMessage(message = msg)
+            } catch (e: Exception) {
+                _uiMessage.value = UiMessage(message = "Erro no check-in: ${e.message}")
+            }
+        }
+    }
+
+    fun publishOfficialAnnouncement(
+        title: String,
+        summary: String,
+        body: String,
+        priority: String,
+        department: String
+    ) {
+        viewModelScope.launch {
+            try {
+                val ann = repository.publishAnnouncement(title, summary, body, priority, department)
+                _uiMessage.value = UiMessage(message = "Comunicado oficial publicado na Nuvem!")
+            } catch (e: Exception) {
+                _uiMessage.value = UiMessage(message = "Erro ao publicar: ${e.message}")
+            }
+        }
+    }
+
+    fun deleteAnnouncement(id: Long) {
+        viewModelScope.launch {
+            try {
+                repository.deleteAnnouncement(id)
+                _uiMessage.value = UiMessage(message = "Comunicado removido.")
+            } catch (e: Exception) {
+                _uiMessage.value = UiMessage(message = "Erro ao remover comunicado: ${e.message}")
+            }
+        }
+    }
+
+    fun forceSyncCloud() {
+        viewModelScope.launch {
+            _uiMessage.value = UiMessage(message = "Sincronizando com Firebase Cloud...")
+            repository.startCloudSynchronization()
+        }
+    }
+
     fun submitRegistration(
         fullName: String,
         clubName: String,
@@ -228,6 +416,7 @@ class CamporiViewModel(application: Application) : AndroidViewModel(application)
                     emergencyContact = emergencyContact
                 )
                 _lastRegistered.value = registered
+                _userSelectedClub.value = registered.clubName
                 _uiMessage.value = UiMessage(message = "Inscrição realizada com sucesso para ${registered.fullName}!")
             } catch (e: Exception) {
                 _uiMessage.value = UiMessage(message = "Erro ao registrar: ${e.localizedMessage}")
@@ -244,9 +433,13 @@ class CamporiViewModel(application: Application) : AndroidViewModel(application)
     }
 
     fun deleteRegistration(registration: Registration) {
+        if (!_isAdminAuthenticated.value) {
+            _uiMessage.value = UiMessage(message = "Apenas a Secretaria/Direção autenticada no Painel Admin pode remover inscrições.")
+            return
+        }
         viewModelScope.launch {
             repository.deleteRegistration(registration)
-            _uiMessage.value = UiMessage(message = "Inscrição de ${registration.fullName} removida.")
+            _uiMessage.value = UiMessage(message = "Inscrição de ${registration.fullName} removida pela Secretaria.")
         }
     }
 

@@ -65,6 +65,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.R
+import com.example.ui.screens.AdminScreen
 import com.example.ui.screens.AnnouncementsScreen
 import com.example.ui.screens.BibleScreen
 import com.example.ui.screens.GalleryScreen
@@ -73,6 +74,7 @@ import com.example.ui.screens.IdealsScreen
 import com.example.ui.screens.MapScreen
 import com.example.ui.screens.RegistrationScreen
 import com.example.ui.screens.ScheduleScreen
+import androidx.compose.material.icons.filled.AdminPanelSettings
 import com.example.ui.theme.CamporiBlue
 import com.example.ui.theme.CamporiNavy
 import com.example.ui.theme.PathfinderRed
@@ -86,13 +88,23 @@ data class NavTabItem(
     val testTag: String
 )
 
+const val TAB_HOME = 0
+const val TAB_REGISTRATION = 1
+const val TAB_SCHEDULE = 2
+const val TAB_MAP = 3
+const val TAB_BIBLE = 4
+const val TAB_ANNOUNCEMENTS = 5
+const val TAB_GALLERY = 6
+const val TAB_IDEALS = 7
+const val TAB_ADMIN = 8
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CamporiApp(
     viewModel: CamporiViewModel,
     modifier: Modifier = Modifier
 ) {
-    var selectedTab by remember { mutableIntStateOf(0) }
+    var selectedTab by remember { mutableIntStateOf(TAB_HOME) }
     val snackbarHostState = remember { SnackbarHostState() }
     val uiMessage by viewModel.uiMessage.collectAsStateWithLifecycle()
     val announcements by viewModel.announcements.collectAsStateWithLifecycle()
@@ -158,7 +170,7 @@ fun CamporiApp(
                 actions = {
                     // Avisos Icon with Badge
                     IconButton(
-                        onClick = { selectedTab = 4 },
+                        onClick = { selectedTab = TAB_ANNOUNCEMENTS },
                         modifier = Modifier.testTag("topbar_announcements_button")
                     ) {
                         if (unreadAnnouncements > 0) {
@@ -195,7 +207,7 @@ fun CamporiApp(
                                 text = { Text("Galeria de Fotos (Malanje)") },
                                 leadingIcon = { Icon(Icons.Default.Collections, contentDescription = null, tint = CamporiBlue) },
                                 onClick = {
-                                    selectedTab = 6
+                                    selectedTab = TAB_GALLERY
                                     moreMenuExpanded = false
                                 }
                             )
@@ -203,7 +215,7 @@ fun CamporiApp(
                                 text = { Text("Hino & Ideais dos Desbravadores") },
                                 leadingIcon = { Icon(Icons.Default.MusicNote, contentDescription = null, tint = PathfinderYellowDark) },
                                 onClick = {
-                                    selectedTab = 7
+                                    selectedTab = TAB_IDEALS
                                     moreMenuExpanded = false
                                 }
                             )
@@ -211,7 +223,15 @@ fun CamporiApp(
                                 text = { Text("Boletim Oficial & Avisos") },
                                 leadingIcon = { Icon(Icons.Default.Campaign, contentDescription = null, tint = PathfinderRed) },
                                 onClick = {
-                                    selectedTab = 4
+                                    selectedTab = TAB_ANNOUNCEMENTS
+                                    moreMenuExpanded = false
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("🔐 Painel Admin & Validador") },
+                                leadingIcon = { Icon(Icons.Default.AdminPanelSettings, contentDescription = null, tint = CamporiNavy) },
+                                onClick = {
+                                    selectedTab = TAB_ADMIN
                                     moreMenuExpanded = false
                                 }
                             )
@@ -265,14 +285,15 @@ fun CamporiApp(
                 label = "ScreenTransition"
             ) { targetTab ->
                 when (targetTab) {
-                    0 -> HomeScreen(viewModel = viewModel, onNavigateToTab = { selectedTab = it })
-                    1 -> RegistrationScreen(viewModel = viewModel)
-                    2 -> ScheduleScreen(viewModel = viewModel)
-                    3 -> MapScreen(viewModel = viewModel)
-                    4 -> AnnouncementsScreen(viewModel = viewModel)
-                    5 -> BibleScreen(viewModel = viewModel)
-                    6 -> GalleryScreen(viewModel = viewModel)
-                    7 -> IdealsScreen(viewModel = viewModel)
+                    TAB_HOME -> HomeScreen(viewModel = viewModel, onNavigateToTab = { selectedTab = it })
+                    TAB_REGISTRATION -> RegistrationScreen(viewModel = viewModel)
+                    TAB_SCHEDULE -> ScheduleScreen(viewModel = viewModel)
+                    TAB_MAP -> MapScreen(viewModel = viewModel)
+                    TAB_BIBLE -> BibleScreen(viewModel = viewModel)
+                    TAB_ANNOUNCEMENTS -> AnnouncementsScreen(viewModel = viewModel)
+                    TAB_GALLERY -> GalleryScreen(viewModel = viewModel)
+                    TAB_IDEALS -> IdealsScreen(viewModel = viewModel)
+                    TAB_ADMIN -> AdminScreen(viewModel = viewModel, onNavigateBack = { selectedTab = TAB_HOME })
                     else -> HomeScreen(viewModel = viewModel, onNavigateToTab = { selectedTab = it })
                 }
             }

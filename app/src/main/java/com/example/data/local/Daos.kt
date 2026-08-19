@@ -22,11 +22,26 @@ interface RegistrationDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(registration: RegistrationEntity): Long
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(registrations: List<RegistrationEntity>)
+
     @Update
     suspend fun update(registration: RegistrationEntity)
 
+    @Query("UPDATE registrations SET status = :newStatus, rejectionReason = :reason WHERE registrationCode = :code")
+    suspend fun updateStatus(code: String, newStatus: String, reason: String = "")
+
+    @Query("UPDATE registrations SET isCheckedIn = :isCheckedIn WHERE registrationCode = :code")
+    suspend fun updateCheckIn(code: String, isCheckedIn: Boolean)
+
     @Delete
     suspend fun delete(registration: RegistrationEntity)
+
+    @Query("DELETE FROM registrations WHERE registrationCode = :code")
+    suspend fun deleteByCode(code: String)
+
+    @Query("DELETE FROM registrations")
+    suspend fun deleteAll()
 
     @Query("SELECT COUNT(*) FROM registrations")
     fun getCount(): Flow<Int>
@@ -63,6 +78,9 @@ interface AnnouncementDao {
 
     @Query("UPDATE announcements SET isRead = 1 WHERE id = :id")
     suspend fun markAsRead(id: Long)
+
+    @Query("DELETE FROM announcements WHERE id = :id")
+    suspend fun deleteById(id: Long)
 }
 
 @Dao
