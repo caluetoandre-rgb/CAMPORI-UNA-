@@ -1,0 +1,43 @@
+name: Build Android APK (Campori UNA)
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build & Package APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Setup Gradle Wrapper Validation
+        uses: gradle/actions/wrapper-validation@v4
+
+      - name: Create .env from template if missing
+        run: |
+          if [ ! -f .env ]; then
+            cp .env.example .env || touch .env
+          fi
+
+      - name: Build Debug APK with Gradle
+        run: ./gradlew assembleDebug --no-daemon
+
+      - name: Upload Debug APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Campori-UNA-Debug-APK
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: warn
