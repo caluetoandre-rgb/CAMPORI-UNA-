@@ -2,11 +2,16 @@ name: Build Android APK
 
 on:
   push:
-    branches: [ main, principal ]
+    branches: [ "main", "master", "principal" ]
+  pull_request:
+    branches: [ "main", "master", "principal" ]
+  workflow_dispatch:
 
 jobs:
   build:
+    name: Build & Package APK
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -16,16 +21,23 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
+          cache: gradle
 
       - name: Make gradlew executable
         run: chmod +x gradlew || true
 
+      - name: Prepare environment variables
+        run: |
+          if [ ! -f .env ]; then
+            cp .env.example .env 2>/dev/null || touch .env
+          fi
+
       - name: Build APK with Gradle
-        run: ./gradlew assembleDebug
+        run: ./gradlew assembleDebug --no-daemon
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: app-debug.apk
           path: app/build/outputs/apk/debug/app-debug.apk
-          
+          if-no-files-found: error
